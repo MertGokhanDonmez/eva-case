@@ -1,17 +1,13 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <LoginPage />
+  <img alt="logo" src="./assets/evalogo.png">
+  <RouterView />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import LoginPage from './views/LoginPage.vue';
 
 export default defineComponent({
-  name: 'App',
-  components: {
-    LoginPage
-  }
+  name: 'App'
 });
 </script>
 
@@ -23,5 +19,17 @@ export default defineComponent({
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+img {
+  width: 30rem;
+  height: 8rem;
+}
+
+@media screen and (max-width: 500px) {
+  img {
+    width: 20rem;
+    height: 5rem;
+  }
 }
 </style>

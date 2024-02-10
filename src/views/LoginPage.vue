@@ -1,6 +1,7 @@
 <template>
     <div>
         <h2>Login</h2>
+        <div v-if="loading" class="loading-spinner"></div>
         <form @submit.prevent="login">
             <label>Email:</label>
             <input v-model="formData.email" type="text" />
@@ -12,10 +13,12 @@
         </form>
     </div>
 </template>
-
+  
 <script lang="ts">
 import { defineComponent } from 'vue';
-import AuthService from '@/services/AuthService';
+import { AuthService } from '@/services/AuthService';
+import router from '@/router';
+import { useStore } from 'vuex';
 
 interface FormData {
     email: string;
@@ -31,28 +34,57 @@ export default defineComponent({
             },
         };
     },
+    computed: {
+        loading(): boolean {
+            return this.$store.state.loading;
+        },
+    },
     methods: {
         async login() {
-            const response: any = await AuthService.login(this.formData.email, this.formData.password);
+            const store = useStore();
+            try {
+                store.commit('setLoading', true);
+                const response: any = await AuthService.login(
+                    this.formData.email,
+                    this.formData.password
+                );
 
-            // Eğer AuthService.login bir UserInformation nesnesi döndürürse,
-            // bu kullanıcı girişi başarılıdır ve başka işlemleri gerçekleştirebilirsiniz.
-            if (response.success) {
-                // Örneğin, kullanıcıyı başka bir sayfaya yönlendirebilirsiniz.
-                // this.$router.push('/dashboard');
-                console.log("User: ", response.user);
-                console.log("Token: ", response.token);
-
-            } else {
-                // Kullanıcı girişi başarısızsa burada bir hata mesajı gösterebilirsiniz.
-                console.error('Login failed');
+                if (response.success) {
+                    // Başarılı giriş durumunda işlemleri gerçekleştir
+                    router.push('/home'); // Ana sayfaya yönlendir
+                } else {
+                    // Başarısız giriş durumunda hata mesajını göster
+                    console.error('Login failed. Error:', response.error);
+                    // İsteğe bağlı olarak kullanıcıya hata mesajını göstermek için bir mekanizma ekleyebilirsiniz
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                store.commit('setLoading', false);
             }
         },
-
     },
 });
 </script>
-
+  
 <style scoped>
-/* Your component styles go here */
+.loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
 </style>
+  
