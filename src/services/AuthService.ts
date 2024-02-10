@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { API_BASE_URL } from '@/config/config';
-import store from '@/store';
+import store from '@/store/store';
 
 export class AuthService {
     static async handleSuccess(data: any, email: string) {

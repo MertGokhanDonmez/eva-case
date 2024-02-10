@@ -1,70 +1,56 @@
 <template>
     <div>
         <h2>Login</h2>
-        <div v-if="loading" class="loading-spinner"></div>
-        <form @submit.prevent="login">
-            <label>Email:</label>
-            <input v-model="formData.email" type="text" />
+        <div v-if="loading" class="overlay">
+            <div class="loading-spinner"></div>
+        </div>
+        <div v-else>
+            <form @submit.prevent="login">
+                <label>Email:</label>
+                <input v-model="formData.email" type="text" />
 
-            <label>Password:</label>
-            <input v-model="formData.password" type="password" />
+                <label>Password:</label>
+                <input v-model="formData.password" type="password" />
 
-            <button type="submit">Login</button>
-        </form>
+                <button type="submit">Login</button>
+            </form>
+        </div>
     </div>
 </template>
   
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import { AuthService } from '@/services/AuthService';
-import router from '@/router';
-import { useStore } from 'vuex';
+import router from '@/router/route';
 
 interface FormData {
     email: string;
     password: string;
 }
 
-export default defineComponent({
-    data(): { formData: FormData } {
-        return {
-            formData: {
-                email: 'homework@eva.guru',
-                password: 'Homeworkeva1**',
-            },
-        };
-    },
-    computed: {
-        loading(): boolean {
-            return this.$store.state.loading;
-        },
-    },
-    methods: {
-        async login() {
-            const store = useStore();
-            try {
-                store.commit('setLoading', true);
-                const response: any = await AuthService.login(
-                    this.formData.email,
-                    this.formData.password
-                );
-
-                if (response.success) {
-                    // Başarılı giriş durumunda işlemleri gerçekleştir
-                    router.push('/home'); // Ana sayfaya yönlendir
-                } else {
-                    // Başarısız giriş durumunda hata mesajını göster
-                    console.error('Login failed. Error:', response.error);
-                    // İsteğe bağlı olarak kullanıcıya hata mesajını göstermek için bir mekanizma ekleyebilirsiniz
-                }
-            } catch (error) {
-                console.error(error);
-            } finally {
-                store.commit('setLoading', false);
-            }
-        },
-    },
+const formData = ref<FormData>({
+    email: 'homework@eva.guru',
+    password: 'Homeworkeva1**',
 });
+
+const loading = ref(false);
+
+const login = async () => {
+    try {
+        loading.value = true;
+        const response: any = await AuthService.login(formData.value.email, formData.value.password);
+
+        if (response.success) {
+            router.push('/home');
+        } else {
+            console.error('Login failed. Error:', response.error);
+        }
+    } catch (error) {
+        console.error(error);
+    } finally {
+        loading.value = false;
+    }
+};
 </script>
   
 <style scoped>
@@ -72,8 +58,8 @@ export default defineComponent({
     border: 4px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
     border-top: 4px solid #3498db;
-    width: 30px;
-    height: 30px;
+    width: 100px;
+    height: 100px;
     animation: spin 1s linear infinite;
 }
 
@@ -85,6 +71,19 @@ export default defineComponent({
     100% {
         transform: rotate(360deg);
     }
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
 }
 </style>
   
