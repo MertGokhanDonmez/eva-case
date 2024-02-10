@@ -20,14 +20,19 @@ export class AuthService {
                     }
                 }
             );
-
-            // console.log('User Information:', userInformationResponse.data);
+            const userInfo = userInformationResponse.data.Data.user;
+            store.commit('user/setUser', userInfo);
+            store.commit('user/setStores', userInfo.store);
+            console.log(store.getters['user/getStores']);
+            console.log(store.getters['user/getUser']);
+            
+            
             return userInformationResponse.data.Data.user;
         } else {
             console.error('AccessToken alınamadı.');
         }
     }
-    static async login(email: string, password: string): Promise<any>{
+    static async login(email: string, password: string): Promise<any> {
         try {
             const response = await axios.post(API_BASE_URL + '/oauth/token', {
                 Email: email,
@@ -38,7 +43,7 @@ export class AuthService {
                 ClientSecret: "SECRET0001",
                 RedirectUri: "https://api.eva.guru",
             });
-            
+
             if (response.data.ApiStatus) {
                 const accessToken = response.data.Data.AccessToken;
                 store.commit('setAccessToken', accessToken);
@@ -48,16 +53,16 @@ export class AuthService {
                     success: true,
                     user: userData,
                     token: response.data.Data.AccessToken,
-                  };
+                };
             } else {
                 console.error('API yanıtı başarısız:', response.data.ApiStatusMessage);
             }
-        } catch (error:any) {
+        } catch (error: any) {
             return {
                 success: false,
                 error: error.response.data.message, // Örneğin, hata mesajını dönebilir
-              };
-        } finally{
+            };
+        } finally {
             store.commit('setLoading', false);
         }
     }

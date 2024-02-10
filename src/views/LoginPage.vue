@@ -40,7 +40,7 @@ const login = async () => {
         loading.value = true;
         const response: any = await AuthService.login(formData.value.email, formData.value.password);
 
-        if (response.success) {
+        if (response.success && ) {
             router.push('/home');
         } else {
             console.error('Login failed. Error:', response.error);

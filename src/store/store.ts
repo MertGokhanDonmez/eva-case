@@ -1,11 +1,18 @@
 import { createStore } from 'vuex';
+import userModule from './modules/user';
+
+export interface RootState {
+  accessToken: string | null;
+  loading: boolean;
+  // Diğer oturum bilgilerini buraya ekleyebilirsiniz
+}
 
 export default createStore({
-  state: {
+  state: (): RootState => ({
     accessToken: null,
-    loading: false, // Yükleniyor durumu
+    loading: false,
     // Diğer oturum bilgilerini buraya ekleyebilirsiniz
-  },
+  }),
   mutations: {
     setAccessToken(state, token) {
       state.accessToken = token;
@@ -20,5 +27,8 @@ export default createStore({
   },
   getters: {
     // Diğer getter'lar buraya eklenir
+  },
+  modules: {
+    user: userModule,
   },
 });
