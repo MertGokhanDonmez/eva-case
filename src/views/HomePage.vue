@@ -1,24 +1,30 @@
 <template>
     <div>
-        <h2>Home Page</h2>
-        <div v-if="store.state.loading" class="overlay">
+        <div v-if="loading" class="overlay">
             <div class="loading-spinner"></div>
         </div>
+        <div>
+            <label for="daySelection">Select Day Range:</label>
+            <select id="daySelection" @change="onDaySelectionChange">
+                <option value="60">Last 60 Days</option>
+                <option value="30">Last 30 Days</option>
+                <option value="14">Last 14 Days</option>
+                <option value="7">Last 7 Days</option>
+            </select>
+        </div>
         <div ref="chartContainer"></div>
-        <button @click="loadChartWithDay(60)">Load Chart (Last 60 Days)</button>
-        <button @click="loadChartWithDay(30)">Load Chart (Last 30 Days)</button>
-        <button @click="loadChartWithDay(14)">Load Chart (Last 14 Days)</button>
-        <button @click="loadChartWithDay(7)">Load Chart (Last 7 Days)</button>
     </div>
 </template>
   
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Chart } from 'highcharts-vue';
 import ChartService from '@/services/ChartService';
 import store from '@/store/store';
+import Highcharts from 'highcharts';
+import { IStoreModel } from '@/models/StoreModel';
 
 const chartContainer = ref(null);
+const loading = ref(false);
 
 onMounted(() => {
     // İlk yüklenme anında varsayılan olarak 30 günlük grafik yükleniyor
@@ -27,43 +33,116 @@ onMounted(() => {
 
 const loadChartWithDay = async (day: any) => {
     try {
-        store.commit('setLoading', true);
-        const accessToken: any = store.state.accessToken; // Burada giriş yaptıktan sonra alınan accessToken'ı kullanmalısınız
-        const stores = store.getters['user/getStores'];
-        console.log('test', store.getters['user/getStores']);
-        const sellerId: any = stores[0].sellerId;
-        const marketplace: any = stores[0].marketplace;
-        // console.log(sellerId, marketplace);
+        loading.value = true;
 
-        const chartData = await ChartService.getDailySalesOverview(accessToken, sellerId, marketplace, day);
+        const accessToken: any = store.state.accessToken;
 
-        // Highcharts kullanarak chartData ile grafik oluşturun
-        createChart(chartData);
+        const storeData: any = store.getters['user/getStores'];
+        const stores: IStoreModel[] = JSON.parse(JSON.stringify(storeData));
+
+        if (stores && stores.length > 0) {
+            const sellerId: any = stores[0].storeId;
+            const marketplace: any = stores[0].marketplaceName;
+            console.log(`sellerId - ${sellerId}, marketplace - ${marketplace}`);
+            const chartData = await ChartService.getDailySalesOverview(accessToken, sellerId, marketplace, day);
+            // const dates: string[] = [];
+            // chartData.response.data.Data.item.forEach(function (element: any) {
+            //     dates.push(element.date);
+            // });
+            const categories = chartData.response.item.map(item => item.date);
+            const fbaAmountData = chartData.response.item.map(item => item.fbaAmount);
+            const fbmAmountData = chartData.response.item.map(item => item.fbmAmount);
+            const profit = chartData.response.item.map(item => item.profit);
+
+            createChart(categories, fbaAmountData, fbmAmountData, profit);
+        } else {
+            console.log('Kullanıcının mağaza verisi yok');
+        }
     } catch (error) {
-        console.error('Error loading chart:', error);
+        console.error('Grafik yüklenirken hata oluştu:', error);
     } finally {
-        store.commit('setLoading', false);
+        loading.value = false;
     }
 };
 
-const createChart = (data: any) => {
-    Chart.chart(chartContainer.value, {
+const createChart = (categories: any, fbaAmountData: any, fbmAmountData: any, profit: any) => {
+    Highcharts.chart(chartContainer.value, {
         chart: {
             type: 'column',
         },
         title: {
-            text: 'Daily Sales Overview',
+            text: 'Daily Sales',
+            align: 'left'
         },
         xAxis: {
-            categories: data.categories, // Kategorilerinizi buraya ekleyin
+            type: 'datetime',
+            categories: categories,
         },
         yAxis: {
             title: {
-                text: 'Sales Amount',
+                text: 'Amount ($)',
             },
         },
-        series: data.series, // Serilerinizi buraya ekleyin
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                dataLabels: {
+                    enabled: true,
+                }
+            },
+            series: {
+                allowPointSelect: true,
+            },
+            point: {
+                events: {
+                    click: function () {
+                        // Seçilen çubuğa odaklanma işlemlerini burada gerçekleştirin
+                        console.log('Selected point:', categories, this.y);
+                    },
+                },
+            },
+        },
+        accessibility: {
+            point: {
+                valueSuffix: '$'
+            }
+        },
+        series: [
+
+            {
+                name: 'Profit',
+                data: profit,
+
+            },
+            {
+                name: 'FBA Sales',
+                data: fbaAmountData,
+
+            },
+            {
+                name: 'FBM Sales',
+                data: fbmAmountData,
+
+            },
+        ],
+        tooltip: {
+            formatter: function () {
+                return (
+                    '<b>' +
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +
+                    '</b><br/>' +
+                    'Total Sales: ' +
+                    this.y
+                );
+            },
+        },
+
     });
+};
+
+const onDaySelectionChange = (event: any) => {
+    const selectedDay = event.target.value;
+    loadChartWithDay(selectedDay);
 };
 </script>
   
@@ -79,6 +158,10 @@ const createChart = (data: any) => {
     justify-content: center;
     align-items: center;
     z-index: 9999;
+}
+
+#daySelection {
+    margin-top: 10px;
 }
 </style>
   

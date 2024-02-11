@@ -1,5 +1,5 @@
 import { createStore } from 'vuex';
-import userModule from './modules/user';
+import userModule from './modules/userModule';
 
 export interface RootState {
   accessToken: string | null;

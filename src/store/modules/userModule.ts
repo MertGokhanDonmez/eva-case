@@ -5,6 +5,7 @@ import { IUser, IUserStore } from '@/models/UserModel';
 interface IUserState {
     user: IUser | null;
     userStore: IUserStore[] | null;
+    isDataLoaded: boolean;
 }
 
 const userModule: Module<IUserState, RootState> = {
@@ -12,6 +13,7 @@ const userModule: Module<IUserState, RootState> = {
     state: () => ({
         user: null,
         userStore: null,
+        isDataLoaded: false,
     }),
     mutations: {
         setUser(state, user: IUser) {
@@ -22,6 +24,7 @@ const userModule: Module<IUserState, RootState> = {
         },
         setStores(state, userStore: IUserStore[]) {
             state.userStore = userStore;
+            state.isDataLoaded = true;
         },
     },
     actions: {
@@ -39,6 +42,7 @@ const userModule: Module<IUserState, RootState> = {
         getUser: (state) => state.user,
         // filter ile istenilen veri getireliebiliyor
         getStores: (state) => state.user?.store || null,
+        isDataLoaded: (state) => state.isDataLoaded,
     },
 };
 

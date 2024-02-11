@@ -7,9 +7,6 @@ export class AuthService {
     static async handleSuccess(data: any, email: string) {
         const accessToken = data.AccessToken;
         if (accessToken) {
-
-            // Şimdi, AccessToken ile başka bir API isteği yapabilirsiniz.
-            // Örneğin, user-information gibi bir endpoint'e istek gönderebilirsiniz.
             const userInformationResponse = await axios.post(API_BASE_URL + '/user/user-information',
                 {
                     email: email
@@ -21,11 +18,9 @@ export class AuthService {
                 }
             );
             const userInfo = userInformationResponse.data.Data.user;
+
             store.commit('user/setUser', userInfo);
             store.commit('user/setStores', userInfo.store);
-            console.log(store.getters['user/getStores']);
-            console.log(store.getters['user/getUser']);
-            
             
             return userInformationResponse.data.Data.user;
         } else {
@@ -48,7 +43,7 @@ export class AuthService {
                 const accessToken = response.data.Data.AccessToken;
                 store.commit('setAccessToken', accessToken);
 
-                const userData = this.handleSuccess(response.data.Data, email);
+                const userData = await this.handleSuccess(response.data.Data, email);
                 return {
                     success: true,
                     user: userData,

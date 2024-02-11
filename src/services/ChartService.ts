@@ -21,15 +21,15 @@ class ChartService {
           }
         }
       );
-
+        
       return {
         success: true,
-        response: response,
+        response: response.data.Data,
       };
     } catch (error: any) {
       console.log(error);
       // throw new Error(error.response.data.message);
-    }finally{
+    } finally {
       store.commit('setLoading', false);
     }
   }
