@@ -33,6 +33,15 @@ class ChartService {
       store.commit('setLoading', false);
     }
   }
+
+  static async getDailySalesSkuList(params: any) {
+      const response = await axios.post(API_BASE_URL+`/data/daily-sales-sku-list`, {
+        params,
+      });
+      console.log();
+      
+      return response.data;
+  }
 }
 
 export default ChartService;
