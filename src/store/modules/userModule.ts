@@ -40,7 +40,6 @@ const userModule: Module<IUserState, RootState> = {
     },
     getters: {
         getUser: (state) => state.user,
-        // filter ile istenilen veri getireliebiliyor
         getStores: (state) => state.user?.store || null,
         isDataLoaded: (state) => state.isDataLoaded,
     },

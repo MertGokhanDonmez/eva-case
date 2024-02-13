@@ -55,28 +55,20 @@ export class AuthService {
         } catch (error: any) {
             return {
                 success: false,
-                error: error.response.data.message, // Örneğin, hata mesajını dönebilir
+                error: error.response.data.message,
             };
         } finally {
             store.dispatch('loading/stopLoading')
         }
     }
     static isAuthenticated(): boolean {
-        // Kullanıcının oturum açıp açık olup olmadığını kontrol et
-        // Örneğin, token var mı veya başka bir kimlik doğrulama yöntemi var mı?
-        // Dönen değere göre true veya false döndür
         return store.state.accessToken !== null;
     }
     static async logout(): Promise<void> {
         try {
-            // Çıkış işlemi için user/logout endpointine POST isteği yap
             await axios.post('/user/logout');
             store.commit('setAccessToken', null);
-
-            // İsteğe bağlı olarak, kullanıcıyı başka bir sayfaya yönlendirebilirsiniz
-            // router.push('/login');
         } catch (error) {
-            // Çıkış işlemi başarısızsa hata mesajını yazdırabilirsiniz
             console.error('Logout error:', error);
         } finally {
             // Loading durumunu kapat

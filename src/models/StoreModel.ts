@@ -6,9 +6,9 @@ export interface IStoreModel {
     region: string;
     paidStatus: number;
     pricingStatus: number;
-    paidDate: Date; // $date-time formatına uyacak şekilde güncellenmelidir
-    reimbursementPackageTrialEndDate: Date; // $date-time formatına uyacak şekilde güncellenmelidir
-    linkedDate: Date; // $date-time formatına uyacak şekilde güncellenmelidir
+    paidDate: Date;
+    reimbursementPackageTrialEndDate: Date;
+    linkedDate: Date; 
     marketplaceName: string;
     marketplaceCode: string;
     enableRepricing: boolean;

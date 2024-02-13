@@ -52,8 +52,6 @@ onMounted(() => {
 const loadChartWithDay = async (day: any) => {
     try {
         store.dispatch('loading/startLoading');
-        console.log(isLoading.value);
-
 
         const accessToken: any = store.state.accessToken;
 
@@ -75,7 +73,7 @@ const loadChartWithDay = async (day: any) => {
 
             createChart(categories, fbaAmountData, fbmAmountData, profit);
         } else {
-            console.log('Kullanıcının mağaza verisi yok');
+            window.alert('Kullanıcının mağaza verisi yok');
         }
     } catch (error) {
         console.error('Grafik yüklenirken hata oluştu:', error);
@@ -193,8 +191,6 @@ const handleColumnClick = (event: any) => {
     const user = store.getters['user/getUser'];
     const marketplace = user.marketplace;
     const sellerId = user.sellerId;
-    console.log(salesDate);
-
 
     // Make an API request to fetch comparison data
     fetchComparisonData(event.shiftKey, marketplace, salesDate, sellerId);
@@ -202,7 +198,6 @@ const handleColumnClick = (event: any) => {
 
 const fetchComparisonData = async (shiftKey: any, marketplace: any, salesDate: any, sellerId: any) => {
     try {
-        console.log(store.state.accessToken);
         const accessToken: any = store.state.accessToken;
         // Make an API request with necessary parameters
         const comparisonResult = await ChartService.getDailySalesSkuList(shiftKey, marketplace, accessToken, salesDate, sellerId);

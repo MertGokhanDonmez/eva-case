@@ -6,9 +6,9 @@ export interface IUserStore {
     region: string;
     paidStatus: number;
     pricingStatus: number;
-    paidDate: Date; // İsterseniz bu kısımları date tipine çevirebilirsiniz
-    reimbursementPackageTrialEndDate: Date; // Aynı şekilde date tipine çevrilebilir
-    linkedDate: Date; // Aynı şekilde date tipine çevrilebilir
+    paidDate: Date;
+    reimbursementPackageTrialEndDate: Date; 
+    linkedDate: Date; 
     marketplaceName: string;
     marketplaceCode: string;
     enableRepricing: boolean;

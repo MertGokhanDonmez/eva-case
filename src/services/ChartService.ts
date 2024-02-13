@@ -30,8 +30,7 @@ class ChartService {
 
 
     } catch (error: any) {
-      console.log(error);
-      // throw new Error(error.response.data.message);
+      throw new Error(error.response.data.message);
     } finally {
       store.dispatch('loading/stopLoading');
 
