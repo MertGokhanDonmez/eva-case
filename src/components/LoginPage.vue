@@ -57,7 +57,6 @@ const formData = ref<FormData>({
 const login = async () => {
     try {
         store.dispatch('loading/startLoading');
-        console.log(store.getters['loading/isLoading']);
 
         const response: any = await AuthService.login(formData.value.email, formData.value.password);
 

@@ -1,6 +1,6 @@
 <template>
     <div class="container mx-auto px-4">
-        <select id="daySelection" @change="onDaySelectionChange">
+        <select id="daySelection" @change="onDaySelectionChange($event.target)">
             <option value="60">Last 60 Days</option>
             <option value="30">Last 30 Days</option>
             <option value="14">Last 14 Days</option>
@@ -63,7 +63,6 @@ const loadChartWithDay = async (day: any) => {
         if (stores && stores.length > 0) {
             const sellerId: any = stores[0].storeId;
             const marketplace: any = stores[0].marketplaceName;
-            console.log(`sellerId - ${sellerId}, marketplace - ${marketplace}`);
             const chartData = await ChartService.getDailySalesOverview(accessToken, sellerId, marketplace, day);
             // const dates: string[] = [];
             // chartData.response.data.Data.item.forEach(function (element: any) {
@@ -89,6 +88,7 @@ const createChart = (categories: any, fbaAmountData: any, fbmAmountData: any, pr
     Highcharts.chart(chartContainer.value, {
         chart: {
             type: 'column',
+            stacking: 'normal',
         },
         title: {
             text: 'Daily Sales',
@@ -97,6 +97,21 @@ const createChart = (categories: any, fbaAmountData: any, fbmAmountData: any, pr
         xAxis: {
             type: 'datetime',
             categories: categories,
+            crosshair: {
+                enabled: true
+            }
+            // crosshair: {
+            //     enabled: true,
+            //     events: {
+            //         click: function (event: any) {
+            //             const category = this.options.xAxis[0].categories[this.columnIndex]
+            //             window.alert(category);
+            //             handleColumnClick(event);
+            //         },
+            //     },
+            // },
+
+
         },
         yAxis: {
             title: {
@@ -105,25 +120,18 @@ const createChart = (categories: any, fbaAmountData: any, fbmAmountData: any, pr
         },
         plotOptions: {
             column: {
+                grouping: false,
                 stacking: 'normal',
                 dataLabels: {
                     enabled: true,
                 },
-                events: {
-                    // Add a click event listener to columns
-                    click: function (event) {
-                        handleColumnClick(event);
-                    },
-                },
             },
             series: {
                 allowPointSelect: true,
-            },
-            point: {
+                compare: 'value',
                 events: {
-                    click: function () {
-                        // Seçilen çubuğa odaklanma işlemlerini burada gerçekleştirin
-                        console.log('Selected point:', categories, this.y);
+                    click: function (event: any) {
+                        handleColumnClick(event);
                     },
                 },
             },
@@ -131,7 +139,7 @@ const createChart = (categories: any, fbaAmountData: any, fbmAmountData: any, pr
         accessibility: {
             point: {
                 valueSuffix: '$'
-            }
+            },
         },
         series: [
 
@@ -152,43 +160,52 @@ const createChart = (categories: any, fbaAmountData: any, fbmAmountData: any, pr
             },
         ],
         tooltip: {
-            formatter: function () {
-                return (
-                    '<b>' +
-                    Highcharts.dateFormat('%Y-%m-%d', this.x) +
-                    '</b><br/>' +
-                    'Total Sales: ' +
-                    this.y
-                );
-            },
+            shared: true,
         },
+
 
     });
 };
 
+// const highlightColumns = (selectedCategory: any) => {
+//     // Seçili kategoriye sahip olan sütunları bulmak için
+//     const selectedColumns = this.series[0].points.filter((point: any) => point.category === selectedCategory);
+
+//     // Tüm sütunları normal renge çevir
+//     this.series[0].points.forEach((point: any) => {
+//         point.update({
+//             color: '#189e54',
+//         });
+//     });
+
+//     // Seçili sütunları vurgulamak için renklerini değiştir
+//     selectedColumns.forEach((point: any) => {
+//         point.update({
+//             color: '#64961e',
+//         });
+//     });
+// };
+
 const handleColumnClick = (event: any) => {
     // Extract necessary data from the clicked column
-    const columnData = event.point.options.columnData; // Adjust this based on your data structure
-    console.log(columnData);
+    const salesDate = event.point.category;
 
-    const salesDate = columnData.date;
+    const user = store.getters['user/getUser'];
+    const marketplace = user.marketplace;
+    const sellerId = user.sellerId;
+    console.log(salesDate);
+
 
     // Make an API request to fetch comparison data
-    fetchComparisonData(salesDate);
+    fetchComparisonData(event.shiftKey, marketplace, salesDate, sellerId);
 };
 
-const fetchComparisonData = async (salesDate: any) => {
+const fetchComparisonData = async (shiftKey: any, marketplace: any, salesDate: any, sellerId: any) => {
     try {
+        console.log(store.state.accessToken);
+        const accessToken: any = store.state.accessToken;
         // Make an API request with necessary parameters
-        const comparisonResult = await ChartService.getDailySalesSkuList({
-            isDaysCompare: isComparisonTableVisible.value ? 1 : 0,
-            marketplace: 'Amazon', // Update with your marketplace data
-            pageNumber: 1, // Adjust as needed
-            pageSize: 30, // Adjust as needed
-            salesDate,
-            salesDate2: isComparisonTableVisible.value ? '2022-11-10' : '', // Adjust as needed
-            sellerId: 'A', // Update with your seller ID
-        });
+        const comparisonResult = await ChartService.getDailySalesSkuList(shiftKey, marketplace, accessToken, salesDate, sellerId);
 
         // Update comparison data and show the table
         comparisonData.value = comparisonResult.data; // Adjust this based on your API response structure
@@ -198,9 +215,9 @@ const fetchComparisonData = async (salesDate: any) => {
     }
 };
 
-const onDaySelectionChange = (event: any) => {
-    const selectedDay = event.target.value;
-    loadChartWithDay(selectedDay);
+const onDaySelectionChange = (selectedDay: any) => {
+    const _selectedDay = selectedDay.target.value;
+    loadChartWithDay(_selectedDay);
 };
 </script>
   

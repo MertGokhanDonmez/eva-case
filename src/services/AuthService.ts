@@ -58,7 +58,7 @@ export class AuthService {
                 error: error.response.data.message, // Örneğin, hata mesajını dönebilir
             };
         } finally {
-            store.commit('setLoading', false);
+            store.dispatch('loading/stopLoading')
         }
     }
     static isAuthenticated(): boolean {
